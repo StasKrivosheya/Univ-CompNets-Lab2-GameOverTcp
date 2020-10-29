@@ -131,6 +131,18 @@ public class Piece : MonoBehaviour
             }
         }
 
+        // making able to kill in a backward direction
+        deltaMoveY = Mathf.Abs(deltaMoveY);
+        if (deltaMoveX == 2 && deltaMoveY == 2)
+        {
+            Piece p = board[(x1 + x2) / 2, (y1 + y2) / 2];
+
+            if (p != null && p.isWhite != isWhite)
+            {
+                return true;
+            }
+        }
+
         return false;
     }
 }
