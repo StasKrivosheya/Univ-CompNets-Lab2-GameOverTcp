@@ -143,6 +143,54 @@ public class Piece : MonoBehaviour
             }
         }
 
+        // making able to move on diagonal for Queen
+        if (isQueen)
+        {
+            // |deltaMove| = [3, 7] (other ways have already been handled)
+            deltaMoveX = x2 - x1;
+            deltaMoveY = y2 - y1;
+
+            // if moving not on a diagonal
+            if (Mathf.Abs(deltaMoveX) != Mathf.Abs(deltaMoveY))
+            {
+                return false;
+            }
+
+            // check whether we have just met an enemy (on the previous iteration)
+            bool enemyEncountered = false;
+
+            while (x1 != x2)
+            {
+                x1 = deltaMoveX > 0 ? ++x1 : --x1;
+                y1 = deltaMoveY > 0 ? ++y1 : --y1;
+
+                Piece p = board[x1, y1];
+
+                if (p != null && p.isWhite == isWhite)
+                {
+                    return false;
+                }
+
+                // check for 2 enemies in a row
+                if (enemyEncountered)
+                {
+                    if (p != null && p.isWhite != isWhite)
+                    {
+                        return false;
+                    }
+
+                    enemyEncountered = false;
+                }
+
+                if (p != null && p.isWhite != isWhite)
+                {
+                    enemyEncountered = true;
+                }
+            }
+
+            return true;
+        }
+
         return false;
     }
 }
