@@ -213,14 +213,14 @@ public class CheckersBoard : MonoBehaviour
         if (selectedPiece != null)
         {
             // if the Piece has to become a King
-            if (selectedPiece.isWhite && !selectedPiece.isKing && y == 7)
+            if (selectedPiece.isWhite && !selectedPiece.isQueen && y == 7)
             {
-                selectedPiece.isKing = true;
+                selectedPiece.isQueen = true;
                 selectedPiece.transform.Rotate(Vector3.right * 180);
             }
-            else if (!selectedPiece.isWhite && !selectedPiece.isKing && y == 0)
+            else if (!selectedPiece.isWhite && !selectedPiece.isQueen && y == 0)
             {
-                selectedPiece.isKing = true;
+                selectedPiece.isQueen = true;
                 selectedPiece.transform.Rotate(Vector3.right * 180);
             }
         }

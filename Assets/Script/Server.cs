@@ -16,67 +16,67 @@ public class Server : MonoBehaviour
     private TcpListener server;
     private bool serverStarted;
 
-    public void Init()
-    {
-        DontDestroyOnLoad(gameObject);
+    //public void Init()
+    //{
+    //    DontDestroyOnLoad(gameObject);
 
-        clients = new List<ServerClient>();
-        disconnectList = new List<ServerClient>();
+    //    clients = new List<ServerClient>();
+    //    disconnectList = new List<ServerClient>();
 
-        try
-        {
-            server = new TcpListener(IPAddress.Any, port);
-            server.Start();
+    //    try
+    //    {
+    //        server = new TcpListener(IPAddress.Any, port);
+    //        server.Start();
 
-            StartListening();
-        }
-        catch (Exception e)
-        {
-            Debug.Log("Socket error: " + e.Message);
-        }
-    }
+    //        StartListening();
+    //    }
+    //    catch (Exception e)
+    //    {
+    //        Debug.Log("Socket error: " + e.Message);
+    //    }
+    //}
 
-    private void Update()
-    {
-        if (!serverStarted)
-        {
-            return;
-        }
+    //private void Update()
+    //{
+    //    if (!serverStarted)
+    //    {
+    //        return;
+    //    }
 
-        foreach (ServerClient client in clients)
-        {
-            // is the client still connected
-            if (!IsConnected(client.tcp))
-            {
-                client.tcp.Close();
-                disconnectList.Add(client);
-                continue;
-            }
-            else
-            {
-                NetworkStream ns = client.tcp.GetStream();
+    //    foreach (ServerClient client in clients)
+    //    {
+    //        // is the client still connected
+    //        if (!IsConnected(client.tcp))
+    //        {
+    //            client.tcp.Close();
+    //            disconnectList.Add(client);
+    //            continue;
+    //        }
+    //        else
+    //        {
+    //            NetworkStream ns = client.tcp.GetStream();
 
-                if (ns.DataAvailable)
-                {
-                    StreamReader reader = new StreamReader(ns, true);
-                    string data = reader.ReadLine();
+    //            if (ns.DataAvailable)
+    //            {
+    //                StreamReader reader = new StreamReader(ns, true);
+    //                string data = reader.ReadLine();
 
-                    if (data != null)
-                    {
-                        OnIncomingData(client, data);
-                    }
-                }
-            }
-        }
+    //                if (data != null)
+    //                {
+    //                    OnIncomingData(client, data);
+    //                }
+    //            }
+    //        }
+    //    }
 
-        for (int i = 0; i < disconnectList.Count - 1; i++)
-        {
-            // Tell our player somebody has disconnected
+    //    for (int i = 0; i < disconnectList.Count - 1; i++)
+    //    {
+    //        // Tell our player somebody has disconnected
 
-            clients.Remove(disconnectList[i]);
-            disconnectList.RemoveAt(i);
-        }
-    }
+    //        clients.Remove(disconnectList[i]);
+    //        disconnectList.RemoveAt(i);
+    //    }
+    //}
 
     private void StartListening()
     {

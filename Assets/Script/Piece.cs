@@ -3,11 +3,11 @@
 public class Piece : MonoBehaviour
 {
     public bool isWhite;
-    public bool isKing;
+    public bool isQueen;
 
     public bool IsForceToMove(Piece[,] board, int x, int y)
     {
-        if (isWhite || isKing)
+        if (isWhite || isQueen)
         {
             // top left
             if (x >= 2 && y <= 5)
@@ -39,7 +39,7 @@ public class Piece : MonoBehaviour
             }
         }
 
-        if (!isWhite || isKing)
+        if (!isWhite || isQueen)
         {
             // bottom left
             if (x >= 2 && y >= 2)
@@ -85,7 +85,7 @@ public class Piece : MonoBehaviour
         int deltaMoveX = Mathf.Abs(x2 - x1);
         int deltaMoveY = y2 - y1;
 
-        if (isWhite || isKing)
+        if (isWhite || isQueen)
         {
             if (deltaMoveX == 1)
             {
@@ -108,7 +108,7 @@ public class Piece : MonoBehaviour
             }
         }
 
-        if (!isWhite || isKing)
+        if (!isWhite || isQueen)
         {
             if (deltaMoveX == 1)
             {
