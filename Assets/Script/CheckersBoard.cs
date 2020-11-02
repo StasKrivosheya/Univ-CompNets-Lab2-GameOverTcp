@@ -8,10 +8,12 @@ public class CheckersBoard : MonoBehaviour
     public GameObject whitePiecePrefab;
     public GameObject blackPiecePrefab;
 
-    private Vector3 boardOffset = new Vector3(-4.0f, 0, -4.0f);
-    private Vector3 pieceOffset = new Vector3(0.5f, 0, 0.5f);
-
+    private readonly Vector3 boardOffset = new Vector3(-4.0f, 0, -4.0f);
+    private readonly Vector3 pieceOffset = new Vector3(0.5f, 0, 0.5f);
+    
+    // who am I as a player
     public bool isWhite;
+    // who's turn
     private bool isWhiteTurn;
     private bool hasKilled;
 
@@ -172,8 +174,21 @@ public class CheckersBoard : MonoBehaviour
                     if (p != null)
                     {
                         pieces[(x1 + x2) / 2, (y1 + y2) / 2] = null;
-                        //Destroy(p.gameObject);
-                        DestroyImmediate(p.gameObject);
+                        Destroy(p.gameObject);
+                        hasKilled = true;
+                    }
+                }
+                else if (pieces[x1, y1].isQueen && Mathf.Abs(x2 - x1) > 2) // if Queen killed anything
+                {
+                    int enemyX = x2 > x1 ? x2 - 1 : x2 + 1;
+                    int enemyY = y2 > y1 ? y2 - 1 : y2 + 1;
+
+                    Piece p = pieces[enemyX, enemyY];
+                    if (p != null)
+                    {
+                        pieces[enemyX, enemyY] = null;
+                        Destroy(p.gameObject);
+
                         hasKilled = true;
                     }
                 }
@@ -204,6 +219,40 @@ public class CheckersBoard : MonoBehaviour
         }
     }
 
+    private List<Piece> ScanForPossibleMove(Piece p, int x, int y)
+    {
+        forcedPieces = new List<Piece>();
+
+        if (pieces[x, y].IsForceToMove(pieces, x, y))
+        {
+            forcedPieces.Add(pieces[x, y]);
+        }
+
+        return forcedPieces;
+    }
+    private List<Piece> ScanForPossibleMove()
+    {
+        forcedPieces = new List<Piece>();
+
+        // check all the pieces
+        for (int i = 0; i < pieces.GetLength(0); i++)
+        {
+            for (int j = 0; j < pieces.GetLength(1); j++)
+            {
+                // if there's a piece and it's your turn
+                if (pieces[i, j] != null && pieces[i, j].isWhite == isWhiteTurn)
+                {
+                    if (pieces[i, j].IsForceToMove(pieces, i, j))
+                    {
+                        forcedPieces.Add(pieces[i, j]);
+                    }
+                }
+            }
+        }
+
+        return forcedPieces;
+    }
+
     private void EndTurn()
     {
         int x = (int)endDrag.x;
@@ -212,7 +261,7 @@ public class CheckersBoard : MonoBehaviour
         // Promotions
         if (selectedPiece != null)
         {
-            // if the Piece has to become a King
+            // if the Piece has to become a Queen
             if (selectedPiece.isWhite && !selectedPiece.isQueen && y == 7)
             {
                 selectedPiece.isQueen = true;
@@ -243,18 +292,20 @@ public class CheckersBoard : MonoBehaviour
 
     private void CheckVictory()
     {
-        var ps = FindObjectsOfType<Piece>();
         bool hasWhite = false, hasBlack = false;
 
-        for (int i = 0; i < ps.Length; i++)
+        foreach (var p in pieces)
         {
-            if (ps[i].isWhite)
+            if (p != null)
             {
-                hasWhite = true;
-            }
-            else
-            {
-                hasBlack = true;
+                if (p.isWhite)
+                {
+                    hasWhite = true;
+                }
+                else
+                {
+                    hasBlack = true;
+                }
             }
         }
 
@@ -270,48 +321,7 @@ public class CheckersBoard : MonoBehaviour
 
     private void Victory(bool isWhite)
     {
-        if (isWhite)
-        {
-            Debug.Log("White team has won!");
-        }
-        else
-        {
-            Debug.Log("Black team has won!");
-        }
-    }
-
-    private List<Piece> ScanForPossibleMove(Piece p, int x, int y)
-    {
-        forcedPieces = new List<Piece>();
-
-        if (pieces[x,y].IsForceToMove(pieces, x, y))
-        {
-            forcedPieces.Add(pieces[x, y]);
-        }
-
-        return forcedPieces;
-    }
-    private List<Piece> ScanForPossibleMove()
-    {
-        forcedPieces = new List<Piece>();
-
-        // check all the pieces
-        for (int i = 0; i < pieces.GetLength(0); i++)
-        {
-            for (int j = 0; j < pieces.GetLength(1); j++)
-            {
-                // if there's a piece and it's your turn
-                if (pieces[i, j] != null && pieces[i, j].isWhite == isWhiteTurn)
-                {
-                    if (pieces[i, j].IsForceToMove(pieces, i, j))
-                    {
-                        forcedPieces.Add(pieces[i, j]);
-                    }
-                }
-            }
-        }
-
-        return forcedPieces;
+        Debug.Log(isWhite ? "White team has won!" : "Black team has won!");
     }
 
     private void GenerateBoard()
