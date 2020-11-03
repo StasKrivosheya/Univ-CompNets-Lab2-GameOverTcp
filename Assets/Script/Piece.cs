@@ -11,6 +11,32 @@ public class Piece : MonoBehaviour
         // top left
         if (x >= 2 && y <= 5)
         {
+            if (board[x, y].isQueen)
+            {
+                int i = x - 1, j = y + 1;
+                while (i != 0 && j != 7)
+                {
+                    if (board[i, j] != null && board[i, j].isWhite == isWhite)
+                    {
+                        break;
+                    }
+
+                    // if we've met enemy and can land
+                    if (board[i, j] != null &&
+                        board[i, j].isWhite != isWhite)
+                    {
+                        if (board[i - 1, j + 1] == null)
+                        {
+                            return true;
+                        }
+
+                        break;
+                    }
+                    --i;
+                    ++j;
+                }
+            }
+
             Piece p = board[x - 1, y + 1];
             // if there is a Piece of another color
             if (p != null && p.isWhite != isWhite)
@@ -25,6 +51,32 @@ public class Piece : MonoBehaviour
         // top right
         if (x <= 5 && y <= 5)
         {
+            if (board[x, y].isQueen)
+            {
+                int i = x + 1, j = y + 1;
+                while (i != 7 && j != 7)
+                {
+                    if (board[i, j] != null && board[i, j].isWhite == isWhite)
+                    {
+                        break;
+                    }
+
+                    // if we've met enemy and can land
+                    if (board[i, j] != null &&
+                        board[i, j].isWhite != isWhite)
+                    {
+                        if (board[i + 1, j + 1] == null)
+                        {
+                            return true;
+                        }
+
+                        break;
+                    }
+                    ++i;
+                    ++j;
+                }
+            }
+
             Piece p = board[x + 1, y + 1];
             // if there is a Piece of another color
             if (p != null && p.isWhite != isWhite)
@@ -40,6 +92,32 @@ public class Piece : MonoBehaviour
         // bottom left
         if (x >= 2 && y >= 2)
         {
+            if (board[x, y].isQueen)
+            {
+                int i = x - 1, j = y - 1;
+                while (i != 0 && j != 0)
+                {
+                    if (board[i, j] != null && board[i, j].isWhite == isWhite)
+                    {
+                        break;
+                    }
+
+                    // if we've met enemy and can land
+                    if (board[i, j] != null &&
+                        board[i, j].isWhite != isWhite)
+                    {
+                        if (board[i - 1, j - 1] == null)
+                        {
+                            return true;
+                        }
+
+                        break;
+                    }
+                    --i;
+                    --j;
+                }
+            }
+
             Piece p = board[x - 1, y - 1];
             // if there is a Piece of another color
             if (p != null && p.isWhite != isWhite)
@@ -54,6 +132,32 @@ public class Piece : MonoBehaviour
         // bottom right
         if (x <= 5 && y >= 2)
         {
+            if (board[x, y].isQueen)
+            {
+                int i = x + 1, j = y - 1;
+                while (i != 7 && j != 0)
+                {
+                    if (board[i, j] != null && board[i, j].isWhite == isWhite)
+                    {
+                        break;
+                    }
+
+                    // if we've met enemy and can land
+                    if (board[i, j] != null &&
+                        board[i, j].isWhite != isWhite)
+                    {
+                        if (board[i + 1, j - 1] == null)
+                        {
+                            return true;
+                        }
+
+                        break;
+                    }
+                    ++i;
+                    --j;
+                }
+            }
+
             Piece p = board[x + 1, y - 1];
             // if there is a Piece of another color
             if (p != null && p.isWhite != isWhite)

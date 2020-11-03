@@ -223,10 +223,16 @@ public class CheckersBoard : MonoBehaviour
     {
         forcedPieces = new List<Piece>();
 
+        // to prevent Queen from illegal loop killing
+        bool wasQueen = pieces[x, y].isQueen;
+        pieces[x, y].isQueen = false;
+
         if (pieces[x, y].IsForceToMove(pieces, x, y))
         {
             forcedPieces.Add(pieces[x, y]);
         }
+
+        pieces[x, y].isQueen = wasQueen;
 
         return forcedPieces;
     }
