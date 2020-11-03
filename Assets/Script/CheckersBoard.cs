@@ -14,7 +14,7 @@ public class CheckersBoard : MonoBehaviour
     // who am I as a player
     public bool isWhite;
     // who's turn
-    private bool isWhiteTurn;
+    public bool isWhiteTurn;
     private bool hasKilled;
 
     private Piece selectedPiece;
@@ -223,16 +223,10 @@ public class CheckersBoard : MonoBehaviour
     {
         forcedPieces = new List<Piece>();
 
-        // to prevent Queen from illegal loop killing
-        bool wasQueen = pieces[x, y].isQueen;
-        pieces[x, y].isQueen = false;
-
         if (pieces[x, y].IsForceToMove(pieces, x, y))
         {
             forcedPieces.Add(pieces[x, y]);
         }
-
-        pieces[x, y].isQueen = wasQueen;
 
         return forcedPieces;
     }
@@ -283,10 +277,18 @@ public class CheckersBoard : MonoBehaviour
         selectedPiece = null;
         startDrag = Vector2.zero;
 
+        // to prevent Queen from illegal loop killing
+        bool wasQueen = pieces[x, y].isQueen;
+        pieces[x, y].isQueen = false;
+
         if (ScanForPossibleMove(selectedPiece, x, y).Count != 0 && hasKilled)
         {
+            // turn status back
+            pieces[x, y].isQueen = wasQueen;
             return;
         }
+        // turn status back
+        pieces[x, y].isQueen = wasQueen;
 
         isWhiteTurn = !isWhiteTurn;
         isWhite = !isWhite;
