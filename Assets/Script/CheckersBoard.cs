@@ -14,7 +14,7 @@ public class CheckersBoard : MonoBehaviour
     // who am I as a player
     public bool isWhite;
     // who's turn
-    public bool isWhiteTurn;
+    private bool isWhiteTurn;
     private bool hasKilled;
 
     private Piece selectedPiece;
