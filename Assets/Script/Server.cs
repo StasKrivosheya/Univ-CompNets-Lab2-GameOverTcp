@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class Server : MonoBehaviour
@@ -87,11 +88,18 @@ public class Server : MonoBehaviour
     {
         TcpListener listener = (TcpListener) ar.AsyncState;
 
-        ServerClient sc = new ServerClient(listener.EndAcceptTcpClient(ar));
+        string allUsers = "";
+        foreach (ServerClient i in clients)
+        {
+            allUsers += i.clientName + '|';
+        }
 
+        ServerClient sc = new ServerClient(listener.EndAcceptTcpClient(ar));
         clients.Add(sc);
-        StartListening();   // cmnt
-        Debug.Log("Somebody has connected!");
+
+        StartListening();
+        
+        Broadcast("SWHO|" + allUsers, clients[clients.Count - 1]);
     }
 
     private bool IsConnected(TcpClient c)
@@ -135,10 +143,37 @@ public class Server : MonoBehaviour
             }
         }
     }
+    private void Broadcast(string data, ServerClient c)
+    {
+        List<ServerClient> sc = new List<ServerClient> {c};
+        Broadcast(data, sc);
+    }
+
     // Server Read
     private void OnIncomingData(ServerClient c, string data)
     {
-        Debug.Log(c.clientName + ": " + data);
+        Debug.Log("Server: " + data);
+
+        string[] dataPart = data.Split('|');
+
+        switch (dataPart[0])
+        {
+            case "CWHO":
+                c.clientName = dataPart[1];
+                c.isHost = dataPart[2] == "1";
+                // Server ConNNection
+                Broadcast("SCNN|" + c.clientName, clients);
+                break;
+            case "CMOV":
+                Broadcast("SMOV|" +
+                          dataPart[1] + "|" +
+                          dataPart[2] + "|" +
+                          dataPart[3] + "|" +
+                          dataPart[4], 
+                    clients);
+                Broadcast(data, clients);
+                break;
+        }
     }
 }
 
@@ -146,6 +181,7 @@ public class ServerClient
 {
     public string clientName;
     public TcpClient tcp;
+    public bool isHost;
 
     public ServerClient(TcpClient tcp)
     {

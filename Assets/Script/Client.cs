@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using UnityEngine;
@@ -6,12 +7,15 @@ using UnityEngine;
 public class Client : MonoBehaviour
 {
     public string clientName;
+    public bool isHost = false;
 
     private bool socketReady;
     private TcpClient socket;
     private NetworkStream stream;
     private StreamWriter writer;
     private StreamReader reader;
+
+    private List<GameClient> players = new List<GameClient>();
 
     private void Start()
     {
@@ -73,7 +77,46 @@ public class Client : MonoBehaviour
     // Read messages from the server
     private void OnIncomingData(string data)
     {
-        Debug.Log(data);
+        Debug.Log("Client: " + data);
+        
+        string[] dataPart = data.Split('|');
+
+        switch (dataPart[0])
+        {
+            case "SWHO":
+                for (int i = 1; i < dataPart.Length - 1; i++)
+                {
+                    UserConnected(dataPart[i], false);
+                }
+
+                Send("CWHO|" + clientName + "|" + (isHost ? 1 : 0).ToString());
+                break;
+            // Somebody has connected (myself)
+            case "SCNN":
+                UserConnected(dataPart[1], false); //
+                break;
+            case "SMOV":
+                CheckersBoard.Instance.TryMove(
+                    int.Parse(dataPart[1]),
+                    int.Parse(dataPart[2]),
+                    int.Parse(dataPart[3]),
+                    int.Parse(dataPart[4]));
+                break;
+        }
+    }
+
+    private void UserConnected(string name, bool isHost)
+    {
+        GameClient c = new GameClient();
+        c.name = name;
+        //c.isHost = isHost;
+
+        players.Add(c);
+
+        if (players.Count == 2)
+        {
+            GameManager.Instance.StartGame();
+        }
     }
 
     // inherited from MonoBehaviour

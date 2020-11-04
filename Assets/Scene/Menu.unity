@@ -666,6 +666,7 @@ MonoBehaviour:
     type: 3}
   clientPrefab: {fileID: 6754082295588796150, guid: cff7a3cb808b63543b2cb4afde0c937a,
     type: 3}
+  nameInput: {fileID: 2012139464}
 --- !u!4 &698496241
 Transform:
   m_ObjectHideFlags: 0
@@ -1462,7 +1463,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1532437820
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1919,7 +1920,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1763875448
 RectTransform:
   m_ObjectHideFlags: 0
