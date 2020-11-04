@@ -28,6 +28,7 @@ public class Server : MonoBehaviour
             server.Start();
 
             StartListening();
+            serverStarted = true;   // cmnt
         }
         catch (Exception e)
         {
@@ -89,6 +90,7 @@ public class Server : MonoBehaviour
         ServerClient sc = new ServerClient(listener.EndAcceptTcpClient(ar));
 
         clients.Add(sc);
+        StartListening();   // cmnt
         Debug.Log("Somebody has connected!");
     }
 

@@ -5,11 +5,18 @@ using UnityEngine;
 
 public class Client : MonoBehaviour
 {
+    public string clientName;
+
     private bool socketReady;
     private TcpClient socket;
     private NetworkStream stream;
     private StreamWriter writer;
     private StreamReader reader;
+
+    private void Start()
+    {
+        DontDestroyOnLoad(gameObject);
+    }
 
     public bool ConnectToServer(string host, int port)
     {
