@@ -1,12 +1,23 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class CheckersBoard : MonoBehaviour
 {
+    public static CheckersBoard Instance { get; private set; }
+
     public Piece[,] pieces = new Piece[8, 8];
 
     public GameObject whitePiecePrefab;
     public GameObject blackPiecePrefab;
+
+    public CanvasGroup alertCanvas;
+    private float lastAlert;
+    private bool alertActive;
+
+    private bool gameIsOver;
+    private float winTime;
 
     private readonly Vector3 boardOffset = new Vector3(-4.0f, 0, -4.0f);
     private readonly Vector3 pieceOffset = new Vector3(0.5f, 0, 0.5f);
@@ -14,7 +25,7 @@ public class CheckersBoard : MonoBehaviour
     // who am I as a player
     public bool isWhite;
     // who's turn
-    public bool isWhiteTurn;
+    private bool isWhiteTurn;
     private bool hasKilled;
 
     private Piece selectedPiece;
@@ -24,17 +35,49 @@ public class CheckersBoard : MonoBehaviour
     private Vector2 startDrag;
     private Vector2 endDrag;
 
+    private Client client;
+
     private void Start()
     {
+        Instance = this;
+
+        client = FindObjectOfType<Client>();
+
+        isWhite = client.isHost;
+        Alert(client.players[0].name + " VS " + client.players[1].name);
+        isWhiteTurn = true;
+
         GenerateBoard();
 
         forcedPieces = new List<Piece>();
-
-        isWhiteTurn = true;
     }
 
     private void Update()
     {
+        if (gameIsOver)
+        {
+            if (Time.time - winTime > 3.0f)
+            {
+                Server server = FindObjectOfType<Server>();
+                Client client = FindObjectOfType<Client>();
+
+                if (server)
+                {
+                    Destroy(server.gameObject);
+                }
+
+                if (client)
+                {
+                    Destroy(client.gameObject);
+                }
+
+                SceneManager.LoadScene("Menu");
+            }
+
+            return;
+        }
+
+        UpdateAlert();
         UpdateMouseOver();
 
         if (isWhite ? isWhiteTurn : !isWhiteTurn)
@@ -130,7 +173,7 @@ public class CheckersBoard : MonoBehaviour
         }
     }
 
-    private void TryMove(int x1, int y1, int x2, int y2)
+    public void TryMove(int x1, int y1, int x2, int y2)
     {
         forcedPieces = ScanForPossibleMove();
 
@@ -274,6 +317,15 @@ public class CheckersBoard : MonoBehaviour
             }
         }
 
+        // client moved
+        string msg = "CMOV|";
+        msg += startDrag.x.ToString() + "|";
+        msg += startDrag.y.ToString() + "|";
+        msg += endDrag.x.ToString() + "|";
+        msg += endDrag.y.ToString();
+
+        client.Send(msg);
+
         selectedPiece = null;
         startDrag = Vector2.zero;
 
@@ -291,11 +343,25 @@ public class CheckersBoard : MonoBehaviour
         pieces[x, y].isQueen = wasQueen;
 
         isWhiteTurn = !isWhiteTurn;
-        isWhite = !isWhite;
+
+        // good for single player, bad for multi
+        // isWhite = !isWhite;
 
         hasKilled = false;
 
         CheckVictory();
+
+        if (!gameIsOver)
+        {
+            if (isWhiteTurn)
+            {
+                Alert("Your turn, " + client.players[0].name);
+            }
+            else
+            {
+                Alert("Your turn, " + client.players[1].name);
+            }
+        }
     }
 
     private void CheckVictory()
@@ -329,7 +395,11 @@ public class CheckersBoard : MonoBehaviour
 
     private void Victory(bool isWhite)
     {
-        Debug.Log(isWhite ? "White team has won!" : "Black team has won!");
+        winTime = Time.time;
+
+        Alert(isWhite ? "White team has won!" : "Black team has won!");
+
+        gameIsOver = true;
     }
 
     private void GenerateBoard()
@@ -370,5 +440,28 @@ public class CheckersBoard : MonoBehaviour
     private void MovePiece(Piece p, int x, int y)
     {
         p.transform.position = (Vector3.right * x) + (Vector3.forward * y) + boardOffset + pieceOffset;
+    }
+
+    public void Alert(string text)
+    {
+        alertCanvas.GetComponentInChildren<Text>().text = text;
+        alertCanvas.alpha = 1;
+        lastAlert = Time.time;
+        alertActive = true;
+    }
+    public void UpdateAlert()
+    {
+        if (alertActive)
+        {
+            if (Time.time - lastAlert > 1.5f)
+            {
+                alertCanvas.alpha = 1 - (Time.time - lastAlert - 1.5f);
+
+                if (Time.time - lastAlert > 2.5f)
+                {
+                    alertActive = false;
+                }
+            }
+        }
     }
 }
