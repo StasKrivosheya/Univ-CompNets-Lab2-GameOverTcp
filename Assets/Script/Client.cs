@@ -15,7 +15,7 @@ public class Client : MonoBehaviour
     private StreamWriter writer;
     private StreamReader reader;
 
-    private List<GameClient> players = new List<GameClient>();
+    public List<GameClient> players = new List<GameClient>();
 
     private void Start()
     {
