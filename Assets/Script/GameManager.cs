@@ -9,6 +9,9 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; set; }
 
+    public bool isInTournamentMode;
+    public Toggle tournamenToggle;
+
     public GameObject mainMenu;
     public GameObject connectMenu;
     public GameObject serverMenu;
@@ -47,6 +50,11 @@ public class GameManager : MonoBehaviour
             {
                 gameInterrupted = true;
             }
+        }
+
+        if (tournamenToggle)
+        {
+            isInTournamentMode = tournamenToggle.isOn;
         }
     }
 

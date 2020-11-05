@@ -96,12 +96,18 @@ public class Server : MonoBehaviour
             allUsers += i.clientName + '|';
         }
 
-        ServerClient sc = new ServerClient(listener.EndAcceptTcpClient(ar));
-        clients.Add(sc);
+        try
+        {
+            ServerClient sc = new ServerClient(listener.EndAcceptTcpClient(ar));
+            clients.Add(sc);
 
-        StartListening();
-
-        Broadcast("SWHO|" + allUsers, clients[clients.Count - 1]);
+            StartListening();
+            Broadcast("SWHO|" + allUsers, clients[clients.Count - 1]);
+        }
+        catch (Exception e)
+        {
+            Debug.Log("Server AcceptTcpClient error: " + e.Message);
+        }
     }
 
     private bool IsConnected(TcpClient c)
