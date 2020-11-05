@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class Server : MonoBehaviour
@@ -29,11 +28,11 @@ public class Server : MonoBehaviour
             server.Start();
 
             StartListening();
-            serverStarted = true;   // cmnt
+            serverStarted = true;
         }
         catch (Exception e)
         {
-            Debug.Log("Socket error: " + e.Message);
+            Debug.Log("Socket error (In Server Init): " + e.Message);
         }
     }
 
@@ -72,10 +71,13 @@ public class Server : MonoBehaviour
 
         for (int i = 0; i < disconnectList.Count - 1; i++)
         {
-            // Tell our player somebody has disconnected
+            // Tell another player (actually, host) somebody has disconnected
+            string msg = "SLSTCNN|" + clients.Find(sc => sc.Equals(disconnectList[i])).clientName;
 
             clients.Remove(disconnectList[i]);
             disconnectList.RemoveAt(i);
+
+            Broadcast(msg, clients);
         }
     }
 
@@ -86,7 +88,7 @@ public class Server : MonoBehaviour
 
     private void AcceptTcpClient(IAsyncResult ar)
     {
-        TcpListener listener = (TcpListener) ar.AsyncState;
+        TcpListener listener = (TcpListener)ar.AsyncState;
 
         string allUsers = "";
         foreach (ServerClient i in clients)
@@ -98,7 +100,7 @@ public class Server : MonoBehaviour
         clients.Add(sc);
 
         StartListening();
-        
+
         Broadcast("SWHO|" + allUsers, clients[clients.Count - 1]);
     }
 
@@ -145,7 +147,7 @@ public class Server : MonoBehaviour
     }
     private void Broadcast(string data, ServerClient c)
     {
-        List<ServerClient> sc = new List<ServerClient> {c};
+        List<ServerClient> sc = new List<ServerClient> { c };
         Broadcast(data, sc);
     }
 
@@ -169,11 +171,16 @@ public class Server : MonoBehaviour
                           dataPart[1] + "|" +
                           dataPart[2] + "|" +
                           dataPart[3] + "|" +
-                          dataPart[4], 
+                          dataPart[4],
                     clients);
                 Broadcast(data, clients);
                 break;
         }
+    }
+
+    public void StopListener()
+    {
+        server.Stop();
     }
 }
 

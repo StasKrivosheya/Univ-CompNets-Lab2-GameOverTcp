@@ -9,6 +9,8 @@ public class Client : MonoBehaviour
     public string clientName;
     public bool isHost = false;
 
+    public bool OpponentDisconnected { get; private set; }
+
     private bool socketReady;
     private TcpClient socket;
     private NetworkStream stream;
@@ -29,19 +31,19 @@ public class Client : MonoBehaviour
             return false;
         }
 
-        try
-        {
+        //try
+        //{
             socket = new TcpClient(host, port);
             stream = socket.GetStream();
             writer = new StreamWriter(stream);
             reader = new StreamReader(stream);
 
             socketReady = true;
-        }
-        catch (Exception e)
-        {
-            Debug.Log("Socket error: " + e.Message);
-        }
+            //}
+        //catch (Exception e)
+        //{
+        //    Debug.Log("Socket error (in Client ConnectToServer): " + e.Message);
+        //}
 
         return socketReady;
     }
@@ -50,6 +52,17 @@ public class Client : MonoBehaviour
     {
         if (socketReady)
         {
+            if (!IsConnected(socket))
+            {
+                Debug.Log("Server unexpectedly lost its connection!");
+                
+                CloseSocket();
+
+                OpponentDisconnected = true;
+
+                return;
+            }
+
             if (stream.DataAvailable)
             {
                 string data = reader.ReadLine();
@@ -59,6 +72,30 @@ public class Client : MonoBehaviour
                     OnIncomingData(data);
                 }
             }
+        }
+    }
+
+    private bool IsConnected(TcpClient c)
+    {
+        try
+        {
+            if (c != null && c.Client != null && c.Connected)
+            {
+                if (c.Client.Poll(0, SelectMode.SelectRead))
+                {
+                    return !(c.Client.Receive(new byte[1], SocketFlags.Peek) == 0);
+                }
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -78,7 +115,7 @@ public class Client : MonoBehaviour
     private void OnIncomingData(string data)
     {
         Debug.Log("Client: " + data);
-        
+
         string[] dataPart = data.Split('|');
 
         switch (dataPart[0])
@@ -93,7 +130,7 @@ public class Client : MonoBehaviour
                 break;
             // Somebody has connected (myself)
             case "SCNN":
-                UserConnected(dataPart[1], false); //
+                UserConnected(dataPart[1], false);
                 break;
             case "SMOV":
                 CheckersBoard.Instance.TryMove(
@@ -102,6 +139,11 @@ public class Client : MonoBehaviour
                     int.Parse(dataPart[3]),
                     int.Parse(dataPart[4]));
                 break;
+            case "SLSTCNN":
+                Debug.Log($"Client {dataPart[1]} lost connection!");
+                OpponentDisconnected = true;
+                GameManager.Instance.gameInterrupted = true;
+                break;
         }
     }
 
@@ -109,7 +151,6 @@ public class Client : MonoBehaviour
     {
         GameClient c = new GameClient();
         c.name = name;
-        //c.isHost = isHost;
 
         players.Add(c);
 
