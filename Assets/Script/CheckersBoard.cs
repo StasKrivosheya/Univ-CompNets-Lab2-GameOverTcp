@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Xml.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -37,8 +38,19 @@ public class CheckersBoard : MonoBehaviour
 
     private Client client;
 
+    private List<bool> wins = new List<bool>(3);
+
+    public Text resultMsgField;
+    public string resultMsg { get; set; } = string.Empty;
+    public bool wasResultsShown;
+
     private void Start()
     {
+        if (!GameManager.Instance.isInTournamentMode)
+        {
+            resultMsgField.text = "You are not in tournament mode!\nEnjoy your game!";
+        }
+        
         Instance = this;
 
         client = FindObjectOfType<Client>();
@@ -56,7 +68,62 @@ public class CheckersBoard : MonoBehaviour
     {
         if (gameIsOver)
         {
-            if (Time.time - winTime > 3.0f)
+            if (GameManager.Instance.isInTournamentMode && wins.Count < 3 && !GameManager.Instance.gameInterrupted)
+            {
+                switch (wins.Count)
+                {
+                    case 1:
+                        gameIsOver = false;
+                        DestroyAllPieces();
+                        GenerateBoard();
+                        Alert("Round 2");
+                        return;
+                    case 2:
+                        // if someone has two victories in a raw
+                        if (wins[0] == wins[1])
+                        {
+                            // GAME REALLY OVER - leave from the switch
+                        }
+                        else
+                        {
+                            gameIsOver = false;
+                            DestroyAllPieces();
+                            GenerateBoard();
+                            Alert("Round 3");
+                            return;
+                        }
+                        break;
+                }
+            }
+
+            if (GameManager.Instance.isInTournamentMode)
+            {
+                int winsAmount = 0, looseAmount = 0;
+
+                foreach (var win in wins)
+                {
+                    if (win)
+                    {
+                        ++winsAmount;
+                    }
+                    else
+                    {
+                        ++looseAmount;
+                    }
+                }
+
+                resultMsg = "VICTORIES:\n" +
+                            $"Yours:   {winsAmount}\n" +
+                            $"Enemy's: {looseAmount}\n";
+                resultMsg += (winsAmount > looseAmount) ? ":)" : ":(";
+            
+                if (!wasResultsShown)
+                {
+                    ShowResults();
+                }
+            }
+
+            if (Time.time - winTime > 5.0f)
             {
                 Server server = FindObjectOfType<Server>();
                 Client client = FindObjectOfType<Client>();
@@ -64,6 +131,7 @@ public class CheckersBoard : MonoBehaviour
                 if (server)
                 {
                     Destroy(server.gameObject);
+                    server.StopListener();
                 }
 
                 if (client)
@@ -71,6 +139,7 @@ public class CheckersBoard : MonoBehaviour
                     Destroy(client.gameObject);
                 }
 
+                Destroy(GameManager.Instance.gameObject);
                 SceneManager.LoadScene("Menu");
             }
 
@@ -109,6 +178,20 @@ public class CheckersBoard : MonoBehaviour
             }
         }
         
+    }
+
+    private void ShowResults()
+    {
+        if (resultMsgField == null)
+        {
+            return;
+        }
+
+        if (resultMsg != string.Empty)
+        {
+            resultMsgField.text = resultMsg;
+            wasResultsShown = true;
+        }
     }
 
     private void UpdateMouseOver()
@@ -401,12 +484,17 @@ public class CheckersBoard : MonoBehaviour
         }
     }
 
-    private void Victory(bool isWhite)
+    private void Victory(bool isWhiteWon)
     {
         winTime = Time.time;
 
-        Alert(isWhite ? "White team has won!" : "Black team has won!");
+        Alert(isWhiteWon ? "White team has won!" : "Black team has won!");
 
+        if (GameManager.Instance.isInTournamentMode)
+        {
+            wins.Add(isWhiteWon == isWhite);
+        }
+         
         gameIsOver = true;
     }
 
@@ -416,7 +504,7 @@ public class CheckersBoard : MonoBehaviour
         for (int y = 0; y < 3; y++)
         {
             bool isRowOdd = y % 2 == 0;
-            for (int x = 0; x < 8; x+=2)
+            for (int x = 0; x < 8; x += 2)
             {
                 GeneratePiece(isRowOdd ? x : x + 1, y);
             }
@@ -468,6 +556,21 @@ public class CheckersBoard : MonoBehaviour
                 if (Time.time - lastAlert > 2.5f)
                 {
                     alertActive = false;
+                }
+            }
+        }
+    }
+
+    private void DestroyAllPieces()
+    {
+        for (int i = 0; i < pieces.GetLength(0); i++)
+        {
+            for (int j = 0; j < pieces.GetLength(1); j++)
+            {
+                if (pieces[i, j] != null)
+                {
+                    Destroy(pieces[i, j].gameObject);
+                    pieces[i, j] = null;
                 }
             }
         }
