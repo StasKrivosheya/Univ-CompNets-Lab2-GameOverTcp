@@ -77,6 +77,14 @@ public class CheckersBoard : MonoBehaviour
             return;
         }
 
+        if (GameManager.Instance.gameInterrupted)
+        {
+            Alert("Your opponent lost connection");
+            winTime = Time.time;
+            gameIsOver = true;
+            return;
+        }
+
         UpdateAlert();
         UpdateMouseOver();
 
