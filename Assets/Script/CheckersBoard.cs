@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Xml.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -18,11 +17,11 @@ public class CheckersBoard : MonoBehaviour
     private bool alertActive;
 
     private bool gameIsOver;
-    private float winTime;
+    private float gameOverTime;
 
     private readonly Vector3 boardOffset = new Vector3(-4.0f, 0, -4.0f);
     private readonly Vector3 pieceOffset = new Vector3(0.5f, 0, 0.5f);
-    
+
     // who am I as a player
     public bool isWhite;
     // who's turn
@@ -50,7 +49,7 @@ public class CheckersBoard : MonoBehaviour
         {
             resultMsgField.text = "You are not in tournament mode!\nEnjoy your game!";
         }
-        
+
         Instance = this;
 
         client = FindObjectOfType<Client>();
@@ -116,14 +115,14 @@ public class CheckersBoard : MonoBehaviour
                             $"Yours:   {winsAmount}\n" +
                             $"Enemy's: {looseAmount}\n";
                 resultMsg += (winsAmount > looseAmount) ? ":)" : ":(";
-            
+
                 if (!wasResultsShown)
                 {
                     ShowResults();
                 }
             }
 
-            if (Time.time - winTime > 5.0f)
+            if (Time.time - gameOverTime > 5.0f)
             {
                 Server server = FindObjectOfType<Server>();
                 Client client = FindObjectOfType<Client>();
@@ -149,7 +148,7 @@ public class CheckersBoard : MonoBehaviour
         if (GameManager.Instance.gameInterrupted)
         {
             Alert("Your opponent lost connection");
-            winTime = Time.time;
+            gameOverTime = Time.time;
             gameIsOver = true;
             return;
         }
@@ -177,7 +176,7 @@ public class CheckersBoard : MonoBehaviour
                 TryMove((int)startDrag.x, (int)startDrag.y, x, y);
             }
         }
-        
+
     }
 
     private void ShowResults()
@@ -409,7 +408,7 @@ public class CheckersBoard : MonoBehaviour
         }
 
         // client moved
-        string msg = "CMOV|";
+        string msg = "Client:Move|";
         msg += startDrag.x.ToString() + "|";
         msg += startDrag.y.ToString() + "|";
         msg += endDrag.x.ToString() + "|";
@@ -486,7 +485,7 @@ public class CheckersBoard : MonoBehaviour
 
     private void Victory(bool isWhiteWon)
     {
-        winTime = Time.time;
+        gameOverTime = Time.time;
 
         Alert(isWhiteWon ? "White team has won!" : "Black team has won!");
 
@@ -494,7 +493,7 @@ public class CheckersBoard : MonoBehaviour
         {
             wins.Add(isWhiteWon == isWhite);
         }
-         
+
         gameIsOver = true;
     }
 

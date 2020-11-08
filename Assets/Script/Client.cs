@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using UnityEngine;
@@ -33,13 +32,13 @@ public class Client : MonoBehaviour
 
         //try
         //{
-            socket = new TcpClient(host, port);
-            stream = socket.GetStream();
-            writer = new StreamWriter(stream);
-            reader = new StreamReader(stream);
+        socket = new TcpClient(host, port);
+        stream = socket.GetStream();
+        writer = new StreamWriter(stream);
+        reader = new StreamReader(stream);
 
-            socketReady = true;
-            //}
+        socketReady = true;
+        //}
         //catch (Exception e)
         //{
         //    Debug.Log("Socket error (in Client ConnectToServer): " + e.Message);
@@ -55,7 +54,7 @@ public class Client : MonoBehaviour
             if (!IsConnected(socket))
             {
                 Debug.Log("Server unexpectedly lost its connection!");
-                
+
                 CloseSocket();
 
                 OpponentDisconnected = true;
@@ -114,32 +113,32 @@ public class Client : MonoBehaviour
     // Read messages from the server
     private void OnIncomingData(string data)
     {
-        Debug.Log("Client: " + data);
+        Debug.Log($"Client {clientName} received: {data}");
 
         string[] dataPart = data.Split('|');
 
         switch (dataPart[0])
         {
-            case "SWHO":
+            case "Server:WhoIsThere":
                 for (int i = 1; i < dataPart.Length - 1; i++)
                 {
                     UserConnected(dataPart[i], false);
                 }
 
-                Send("CWHO|" + clientName + "|" + (isHost ? 1 : 0).ToString());
+                Send("Client:IAmHere|" + clientName + "|" + (isHost ? 1 : 0).ToString());
                 break;
-            // Somebody has connected (myself)
-            case "SCNN":
+            // Somebody has connected (or myself)
+            case "Server:NewConnection":
                 UserConnected(dataPart[1], false);
                 break;
-            case "SMOV":
+            case "Server:Move":
                 CheckersBoard.Instance.TryMove(
                     int.Parse(dataPart[1]),
                     int.Parse(dataPart[2]),
                     int.Parse(dataPart[3]),
                     int.Parse(dataPart[4]));
                 break;
-            case "SLSTCNN":
+            case "Server:LostConnection":
                 Debug.Log($"Client {dataPart[1]} lost connection!");
                 OpponentDisconnected = true;
                 GameManager.Instance.gameInterrupted = true;

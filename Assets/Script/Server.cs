@@ -72,7 +72,7 @@ public class Server : MonoBehaviour
         for (int i = 0; i < disconnectList.Count - 1; i++)
         {
             // Tell another player (actually, host) somebody has disconnected
-            string msg = "SLSTCNN|" + clients.Find(sc => sc.Equals(disconnectList[i])).clientName;
+            string msg = "Server:LostConnection|" + clients.Find(sc => sc.Equals(disconnectList[i])).clientName;
 
             clients.Remove(disconnectList[i]);
             disconnectList.RemoveAt(i);
@@ -102,7 +102,7 @@ public class Server : MonoBehaviour
             clients.Add(sc);
 
             StartListening();
-            Broadcast("SWHO|" + allUsers, clients[clients.Count - 1]);
+            Broadcast("Server:WhoIsThere|" + allUsers, clients[clients.Count - 1]);
         }
         catch (Exception e)
         {
@@ -160,20 +160,20 @@ public class Server : MonoBehaviour
     // Server Read
     private void OnIncomingData(ServerClient c, string data)
     {
-        Debug.Log("Server: " + data);
+        Debug.Log("Server received: " + data);
 
         string[] dataPart = data.Split('|');
 
         switch (dataPart[0])
         {
-            case "CWHO":
+            case "Client:IAmHere":
                 c.clientName = dataPart[1];
                 c.isHost = dataPart[2] == "1";
                 // Server ConNNection
-                Broadcast("SCNN|" + c.clientName, clients);
+                Broadcast("Server:NewConnection|" + c.clientName, clients);
                 break;
-            case "CMOV":
-                Broadcast("SMOV|" +
+            case "Client:Move":
+                Broadcast("Server:Move|" +
                           dataPart[1] + "|" +
                           dataPart[2] + "|" +
                           dataPart[3] + "|" +
